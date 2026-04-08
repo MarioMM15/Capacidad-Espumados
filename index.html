@@ -8,12 +8,19 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Inter', sans-serif; }
-#root { min-height: 100vh; }
 </style>
-<script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/recharts@2.5.0/umd/Recharts.js"></script>
-<script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "recharts": "https://esm.sh/recharts@2.12.7?external=react,react-dom",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom": "https://esm.sh/react-dom@18.2.0"
+  }
+}
+</script>
+<script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js"></script>
 </head>
 <body>
 <div id="root">
@@ -21,11 +28,10 @@ body { font-family: 'Inter', sans-serif; }
     Cargando dashboard...
   </div>
 </div>
-<script type="text/babel">
-const { useState, useMemo } = React;
-const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } = Recharts;
-
-
+<script type="text/babel" data-type="module">
+import React, { useState, useMemo } from "react";
+import { createRoot } from "react-dom/client";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 
 
 const TEAL="#156082",RED="#D94040",AMBER="#E6A817",GREEN="#2E8B57",BG="#F5F6F8",CARD="#FFFFFF",CARD2="#EDF0F4",TEXT="#1A2332",MUTED="#6B7A90",BORDER="#D8DDE6";
@@ -395,7 +401,7 @@ function Dashboard() {
 }
 
 
-ReactDOM.createRoot(document.getElementById('root')).render(<Dashboard />);
+createRoot(document.getElementById('root')).render(<Dashboard />);
 </script>
 </body>
 </html>
