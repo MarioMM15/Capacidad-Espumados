@@ -221,9 +221,9 @@ function Dashboard(){
     const shift=diag.shift||0,spread=diag.spread||0,both=diag.both||0;
     const max=Math.max(shift,spread,both);
     if(max===0) return{text:"Sin problemas",color:GREEN};
-    if(both>=shift&&both>=spread) return{text:`Combinado (${both})`,color:RED};
-    if(shift>spread) return{text:`Desplazamiento (${shift})`,color:AMBER};
-    return{text:`Dispersion (${spread})`,color:"#8B5CF6"};
+    if(both>=shift&&both>=spread) return{text:`Correccion doble (${both})`,color:RED};
+    if(shift>spread) return{text:`Media corrida (${shift})`,color:AMBER};
+    return{text:`Proceso inestable (${spread})`,color:"#8B5CF6"};
   };
 
   return(
@@ -275,30 +275,42 @@ function Dashboard(){
         </div>
 
         {/* ═══ EJECUTIVO ═══ */}
-        {view==="ejecutivo"&&<React.Fragment>
+        {view==="ejecutivo"&&(()=>{
+          const passArr=molds.map(m=>({m,p:moldStats[m]?.pctPass||0,c:moldStats[m]?.pctCap||0})).filter(x=>x.p>0||x.c>0);
+          const best=passArr.length?passArr.reduce((a,b)=>a.p>b.p?a:b):null;
+          const worst=passArr.length?passArr.reduce((a,b)=>a.p<b.p?a:b):null;
+          const univFails=filteredDims.filter(d=>d.fails===molds.length).length;
+          return (<React.Fragment>
           {/* KPI strip */}
           <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-            {[
-              ["Cotas evaluadas",String(filteredDims.length),TEAL],
-              ["Fallas universales",String(filteredDims.filter(d=>d.fails===molds.length).length),RED],
-              ["% Pasa (rango)",molds.length?`${Math.min(...molds.map(m=>moldStats[m]?.pctPass||0))}-${Math.max(...molds.map(m=>moldStats[m]?.pctPass||0))}%`:"--",AMBER],
-              ["% Capaz (rango)",molds.length?`${Math.min(...molds.map(m=>moldStats[m]?.pctCap||0))}-${Math.max(...molds.map(m=>moldStats[m]?.pctCap||0))}%`:"--",
-                Math.max(...molds.map(m=>moldStats[m]?.pctCap||0))>=50?AMBER:RED]
-            ].map(([l,v,c],i)=>(
-              <div key={i} style={{background:CARD,borderRadius:10,padding:"14px 18px",flex:1,minWidth:140,textAlign:"center",border:`1px solid ${BORDER}`}}>
-                <div style={{fontSize:24,fontWeight:800,color:c}}>{v}</div>
-                <div style={{fontSize:10,color:MUTED,marginTop:2}}>{l}</div>
-              </div>
-            ))}
+            <div style={{background:CARD,borderRadius:10,padding:"14px 18px",flex:1,minWidth:130,textAlign:"center",border:`1px solid ${BORDER}`}}>
+              <div style={{fontSize:24,fontWeight:800,color:TEAL}}>{filteredDims.length}</div>
+              <div style={{fontSize:10,color:MUTED,marginTop:2}}>Cotas evaluadas</div>
+            </div>
+            <div style={{background:CARD,borderRadius:10,padding:"14px 18px",flex:1,minWidth:130,textAlign:"center",border:`1px solid ${BORDER}`}}>
+              <div style={{fontSize:24,fontWeight:800,color:univFails>0?RED:GREEN}}>{univFails}</div>
+              <div style={{fontSize:10,color:MUTED,marginTop:2}}>Fallan en TODOS los moldes</div>
+            </div>
+            {best&&<div style={{background:CARD,borderRadius:10,padding:"14px 18px",flex:1,minWidth:130,textAlign:"center",border:`2px solid ${GREEN}40`}}>
+              <div style={{fontSize:9,color:GREEN,fontWeight:700,letterSpacing:1}}>MEJOR MOLDE</div>
+              <div style={{fontSize:28,fontWeight:800,color:GREEN}}>M{best.m}</div>
+              <div style={{fontSize:10,color:MUTED}}>{best.p}% pasa · {best.c}% capaz</div>
+            </div>}
+            {worst&&<div style={{background:CARD,borderRadius:10,padding:"14px 18px",flex:1,minWidth:130,textAlign:"center",border:`2px solid ${RED}40`}}>
+              <div style={{fontSize:9,color:RED,fontWeight:700,letterSpacing:1}}>PEOR MOLDE</div>
+              <div style={{fontSize:28,fontWeight:800,color:RED}}>M{worst.m}</div>
+              <div style={{fontSize:10,color:MUTED}}>{worst.p}% pasa · {worst.c}% capaz</div>
+            </div>}
           </div>
 
           {/* Diagnostic per tipo */}
           <Card style={{marginBottom:14}}>
-            <div style={{fontSize:13,fontWeight:700,color:TEAL,marginBottom:12}}>DESEMPENO POR TIPO DE COTA</div>
+            <div style={{fontSize:13,fontWeight:700,color:TEAL,marginBottom:4}}>DESEMPENO POR TIPO DE COTA</div>
+            <div style={{fontSize:9,color:MUTED,marginBottom:10}}>% Pasa = media dentro de tolerancia · % Capaz = Ppk mayor o igual a 1.33 (proceso sostenible)</div>
             <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
               <thead><tr style={{borderBottom:`2px solid ${BORDER}`}}>
-                {["Tipo","Cotas","% Pasa (rango)","% Capaz (rango)","Causa raiz dominante"].map(h=>
+                {["Tipo","Cotas","% Pasa (rango entre moldes)","% Capaz (rango entre moldes)","Causa raiz dominante"].map(h=>
                   <th key={h} style={{padding:"8px",textAlign:"center",color:MUTED,fontWeight:600}}>{h}</th>)}
               </tr></thead>
               <tbody>
@@ -313,11 +325,11 @@ function Dashboard(){
                   const pMin=Math.min(...passRng),pMax=Math.max(...passRng);
                   const cMin=Math.min(...capRng),cMax=Math.max(...capRng);
                   const tipoColor=tipo==="DVA"?TEAL:tipo==="CP"?AMBER:RED;
-                  return(<tr key={tipo} style={{borderBottom:`1px solid ${BORDER}44`}}>
+                  return (<tr key={tipo} style={{borderBottom:`1px solid ${BORDER}44`}}>
                     <td style={{padding:8,fontWeight:700}}><span style={{color:tipoColor}}>{tipo==="CP"?"Control de Proceso":tipo}</span></td>
                     <td style={{padding:8,textAlign:"center"}}>{ds.length}</td>
-                    <td style={{padding:8,textAlign:"center",color:pMin<50?RED:pMin<70?AMBER:GREEN,fontWeight:600}}>{pMin}-{pMax}%</td>
-                    <td style={{padding:8,textAlign:"center",color:cMax<33?RED:cMax<60?AMBER:GREEN,fontWeight:600}}>{cMin}-{cMax}%</td>
+                    <td style={{padding:8,textAlign:"center",color:pMin<50?RED:pMin<70?AMBER:GREEN,fontWeight:600}}>{pMin}% - {pMax}%</td>
+                    <td style={{padding:8,textAlign:"center",color:cMax<33?RED:cMax<60?AMBER:GREEN,fontWeight:600}}>{cMin}% - {cMax}%</td>
                     <td style={{padding:8,textAlign:"center",color:dom.color,fontWeight:600}}>{dom.text}</td>
                   </tr>);
                 })}
@@ -329,16 +341,17 @@ function Dashboard(){
           {/* Per-mold diagnostic */}
           <Card style={{marginBottom:14}}>
             <div style={{fontSize:13,fontWeight:700,color:TEAL,marginBottom:4}}>DIAGNOSTICO POR MOLDE</div>
-            <div style={{fontSize:9,color:MUTED,marginBottom:12,display:"flex",gap:12}}>
-              <span><span style={{display:"inline-block",width:8,height:8,borderRadius:2,background:GREEN,marginRight:3}}/>OK</span>
-              <span><span style={{display:"inline-block",width:8,height:8,borderRadius:2,background:AMBER,marginRight:3}}/>Desplazamiento</span>
-              <span><span style={{display:"inline-block",width:8,height:8,borderRadius:2,background:"#8B5CF6",marginRight:3}}/>Dispersion</span>
-              <span><span style={{display:"inline-block",width:8,height:8,borderRadius:2,background:RED,marginRight:3}}/>Ambos</span>
+            <div style={{fontSize:9,color:MUTED,marginBottom:6}}>Cada barra muestra la proporcion de cotas por tipo de problema detectado:</div>
+            <div style={{fontSize:9,color:MUTED,marginBottom:12,display:"flex",gap:16,flexWrap:"wrap"}}>
+              <span><span style={{display:"inline-block",width:10,height:10,borderRadius:2,background:GREEN,marginRight:4,verticalAlign:"middle"}}/>Sin problema — cumple tolerancia y es capaz</span>
+              <span><span style={{display:"inline-block",width:10,height:10,borderRadius:2,background:AMBER,marginRight:4,verticalAlign:"middle"}}/>Media corrida — pieza consistente pero descentrada, requiere ajuste de herramental</span>
+              <span><span style={{display:"inline-block",width:10,height:10,borderRadius:2,background:"#8B5CF6",marginRight:4,verticalAlign:"middle"}}/>Proceso inestable — mucha variacion pieza a pieza, requiere optimizar parametros</span>
+              <span><span style={{display:"inline-block",width:10,height:10,borderRadius:2,background:RED,marginRight:4,verticalAlign:"middle"}}/>Correccion doble — media corrida + proceso inestable, requiere herramental + proceso</span>
             </div>
             <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
               <thead><tr style={{borderBottom:`2px solid ${BORDER}`}}>
-                {["Molde","n","% Pasa","% Capaz","Diagnostico","Problema dominante"].map(h=>
+                {["Molde","Cotas","% Pasa tolerancia","% Capaz (Ppk>=1.33)","Diagnostico visual","Problema principal"].map(h=>
                   <th key={h} style={{padding:"8px",textAlign:"center",color:MUTED,fontWeight:600}}>{h}</th>)}
               </tr></thead>
               <tbody>
@@ -402,7 +415,7 @@ function Dashboard(){
             </table>
             </div>
           </Card>
-        </React.Fragment>}
+        </React.Fragment>);})()}
 
         {/* ═══ RESUMEN ═══ */}
         {view==="resumen"&&<React.Fragment>
@@ -522,12 +535,12 @@ function Dashboard(){
                 </div>
                 <DiagBar ok={diag.ok} shift={diag.shift} spread={diag.spread} both={diag.both} total={ms.total}/>
                 <div style={{display:"flex",gap:10,fontSize:9,marginTop:6,marginBottom:6}}>
-                  <span style={{color:GREEN}}>OK {diag.ok}</span>
-                  <span style={{color:AMBER}}>Despl {diag.shift}</span>
-                  <span style={{color:"#8B5CF6"}}>Disp {diag.spread}</span>
-                  <span style={{color:RED}}>Ambos {diag.both}</span>
+                  <span style={{color:GREEN}}>Sin problema {diag.ok}</span>
+                  <span style={{color:AMBER}}>Media corrida {diag.shift}</span>
+                  <span style={{color:"#8B5CF6"}}>Inestable {diag.spread}</span>
+                  <span style={{color:RED}}>Corr. doble {diag.both}</span>
                 </div>
-                <div style={{fontSize:10,marginBottom:6}}>Capaces: <span style={{fontWeight:700,color:ms.pctCap>=50?GREEN:ms.pctCap>=30?AMBER:RED}}>{ms.pctCap}%</span> · Dominante: <span style={{color:dom.color,fontWeight:600}}>{dom.text}</span></div>
+                <div style={{fontSize:10,marginBottom:6}}>Capaces (Ppk>=1.33): <span style={{fontWeight:700,color:ms.pctCap>=50?GREEN:ms.pctCap>=30?AMBER:RED}}>{ms.pctCap}%</span> · Problema principal: <span style={{color:dom.color,fontWeight:600}}>{dom.text}</span></div>
                 {e.byTipo&&<div style={{fontSize:9,color:MUTED,lineHeight:1.5}}>
                   {["DVA","CP","CTQ"].map(tipo=>{
                     const t=(e.byTipo||{})[tipo];
