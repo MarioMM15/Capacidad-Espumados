@@ -5,33 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Ejecutivo — Mabe ADS</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; }
-</style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "recharts": "https://esm.sh/recharts@2.12.7?external=react,react-dom",
-    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "react-dom": "https://esm.sh/react-dom@18.2.0"
-  }
-}
-</script>
+<style>* { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: 'Inter', sans-serif; }</style>
+<script type="importmap">{"imports":{"react":"https://esm.sh/react@18.2.0","react-dom/client":"https://esm.sh/react-dom@18.2.0/client","recharts":"https://esm.sh/recharts@2.12.7?external=react,react-dom","react/jsx-runtime":"https://esm.sh/react@18.2.0/jsx-runtime","react-dom":"https://esm.sh/react-dom@18.2.0"}}</script>
 <script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js"></script>
 </head>
 <body>
-<div id="root">
-  <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#666">
-    Cargando dashboard...
-  </div>
-</div>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#666">Cargando dashboard...</div></div>
 <script type="text/babel" data-type="module">
 import React, { useState, useMemo } from "react";
 import { createRoot } from "react-dom/client";
-
 
 const TEAL="#156082",RED="#D94040",AMBER="#E6A817",GREEN="#2E8B57",BG="#F4F6F9",CARD="#FFFFFF",BORDER="#DDE1E8",TEXT="#1E293B",MUTED="#6B7A90",LIGHT="#F0F4F8";
 
@@ -120,7 +102,7 @@ const Boxplot=({dim,molds})=>{
 
 function Dashboard(){
   const [partIdx,setPartIdx]=useState(0);
-  const [view,setView]=useState("ejecutivo");
+  const [view,setView]=useState("scorecard");
   const [selectedDim,setSelectedDim]=useState(0);
   const [fTol,setFTol]=useState("all");
   const [fTipo,setFTipo]=useState("all");
@@ -229,8 +211,125 @@ function Dashboard(){
   return(
     <div style={{background:BG,color:TEXT,fontFamily:"'Inter','Segoe UI',system-ui,sans-serif",minHeight:"100vh",padding:20}}>
       <div style={{maxWidth:1280,margin:"0 auto"}}>
+        {/* ═══ SCORE CARD ═══ */}
+        {view==="scorecard"&&(()=>{
+          const SC=[
+            {pn:"294D3449A001",name:"Puerta FZ con Dispenser",cotas:260,molds:8,
+              dva:{n:37,pB:{m:"M1",v:"78%"},pW:{m:"M4",v:"46%"},cB:{m:"M1",v:"32%"},cW:{m:"M5",v:"16%"},issue:"Correccion doble"},
+              cp:{n:31,pB:{m:"M8",v:"87%"},pW:{m:"M6",v:"71%"},cB:{m:"M4",v:"58%"},cW:{m:"M1",v:"39%"},issue:"Proceso inestable"},
+              ctq:{n:183,pB:{m:"M4",v:"39%"},pW:{m:"M1",v:"27%"},cB:{m:"M4",v:"36%"},cW:{m:"M5",v:"9%"},issue:"Correccion doble"},
+              best:{m:"M4",p:45},worst:{m:"M5",p:37},univ:90,
+              dx:"90 cotas (36%) fallan en los 8 moldes. Los CTQ tienen 9-36% de capacidad. Requiere revision de factibilidad de tolerancias CTQ con Ingenieria de Producto."},
+            {pn:"294D3450A001",name:"Puerta FF 36",cotas:172,molds:8,
+              dva:{n:35,pB:{m:"M4",v:"77%"},pW:{m:"M2",v:"60%"},cB:{m:"M5",v:"49%"},cW:{m:"M3",v:"23%"},issue:"Proceso inestable"},
+              cp:{n:29,pB:{m:"M2",v:"97%"},pW:{m:"M1",v:"93%"},cB:{m:"M8",v:"76%"},cW:{m:"M2",v:"38%"},issue:"Proceso inestable"},
+              ctq:{n:95,pB:{m:"M4",v:"25%"},pW:{m:"M5",v:"18%"},cB:{m:"M6",v:"21%"},cW:{m:"M5",v:"9%"},issue:"Correccion doble"},
+              best:{m:"M7/M8",p:81},worst:{m:"M2/M5",p:44},univ:6,
+              dx:"Pieza mas estable. Solo 6 fallas universales. Control de Proceso excelente (93-97%). M7/M8 solo tienen 77 de 172 cotas medidas."},
+            {pn:"294D3446A001",name:"Gabinete 36SD",cotas:289,molds:8,
+              dva:{n:30,pB:{m:"M3",v:"50%"},pW:{m:"M6",v:"37%"},cB:{m:"M8",v:"50%"},cW:{m:"M7",v:"23%"},issue:"Correccion doble"},
+              cp:{n:230,pB:{m:"M1",v:"46%"},pW:{m:"M8",v:"35%"},cB:{m:"M2",v:"45%"},cW:{m:"M7",v:"19%"},issue:"Media corrida"},
+              ctq:{n:22,pB:{m:"M2",v:"64%"},pW:{m:"M8",v:"41%"},cB:{m:"M2",v:"41%"},cW:{m:"M7",v:"18%"},issue:"Correccion doble"},
+              best:{m:"M1/M2",p:46},worst:{m:"M8",p:36},univ:97,
+              dx:"Pieza mas comprometida. 97 cotas (34%) fallan en los 8 moldes. Desviacion masiva en costillas FF y puntos de superficie. El acero esta fuera de nominal."}
+          ];
+          const ML=({label,m,v,color})=>(<div style={{fontSize:9,lineHeight:1.3}}><span style={{fontSize:8,color:MUTED,minWidth:36,display:"inline-block"}}>{label}:</span><span style={{fontWeight:700,color,fontSize:10}}>{m}</span> <span style={{color,fontSize:9}}>({v})</span></div>);
+          const TR=({tipo,d,color})=>(<tr style={{borderBottom:`1px solid ${BORDER}44`}}>
+            <td style={{padding:"8px",fontWeight:700,fontSize:10}}><span style={{color}}>{tipo}</span></td>
+            <td style={{padding:"8px 4px",textAlign:"center",fontSize:10}}>{d.n}</td>
+            <td style={{padding:"6px 8px"}}><ML label="Mejor" m={d.pB.m} v={d.pB.v} color={GREEN}/><ML label="Peor" m={d.pW.m} v={d.pW.v} color={RED}/></td>
+            <td style={{padding:"6px 8px"}}><ML label="Mejor" m={d.cB.m} v={d.cB.v} color={GREEN}/><ML label="Peor" m={d.cW.m} v={d.cW.v} color={RED}/></td>
+            <td style={{padding:"8px 4px",textAlign:"center",fontSize:9,fontWeight:600,color:d.issue.includes("doble")?RED:d.issue.includes("corrida")?AMBER:"#8B5CF6"}}>{d.issue}</td>
+          </tr>);
+          return(<React.Fragment>
+            {/* Header */}
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:20,borderBottom:`3px solid ${TEAL}`,paddingBottom:12}}>
+              <div>
+                <div style={{fontSize:10,color:TEAL,letterSpacing:3,fontWeight:700}}>MABE QUANTUM · CALIDAD · METROLOGIA 3D</div>
+                <h1 style={{fontSize:24,fontWeight:800,margin:"4px 0 0"}}>Score Card ADS Espumados</h1>
+                <div style={{fontSize:11,color:MUTED,marginTop:2}}>Programa 36SD — 3 Numeros de Parte — 721 Cotas — 24 Cavidades</div>
+              </div>
+              <div style={{textAlign:"right",fontSize:10,color:MUTED}}><div>Abril 2026</div><div>Revision 1.0</div></div>
+            </div>
+            {/* Global KPIs */}
+            <div style={{background:CARD,borderRadius:10,padding:"14px 20px",border:`1px solid ${BORDER}`,marginBottom:18,display:"flex",gap:16,flexWrap:"wrap",justifyContent:"space-around"}}>
+              {[["721","Cotas totales evaluadas",TEAL],["24","Cavidades analizadas",TEAL],["193 (27%)","Fallan en TODOS los moldes",RED],["28%","Capacidad promedio (Ppk>=1.33)",RED]].map(([v,l,c],i)=>(
+                <div key={i} style={{textAlign:"center",flex:1,minWidth:80}}>
+                  <div style={{fontSize:22,fontWeight:800,color:c,lineHeight:1}}>{v}</div>
+                  <div style={{fontSize:9,color:MUTED,marginTop:3}}>{l}</div>
+                </div>
+              ))}
+            </div>
+            {/* Hallazgo */}
+            <div style={{display:"flex",borderRadius:8,overflow:"hidden",marginBottom:18}}>
+              <div style={{width:5,background:RED,flexShrink:0}}/>
+              <div style={{background:"#FEF2F2",padding:"12px 16px",flex:1}}>
+                <div style={{fontSize:11,fontWeight:700,color:RED,marginBottom:3}}>HALLAZGO PRINCIPAL</div>
+                <div style={{fontSize:11,lineHeight:1.5}}>193 cotas (27%) fallan en todos los moldes de su pieza. El problema no es un molde individual — es sistemico. Las causas principales son: brecha entre tolerancias CTQ de dibujo y capacidad del proceso de inyeccion en puertas, y desviacion de herramental en gabinete.</div>
+              </div>
+            </div>
+            {/* Part cards */}
+            <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
+              {SC.map((p,pi)=>(
+                <div key={p.pn} style={{flex:1,minWidth:320,background:CARD,borderRadius:10,border:`1px solid ${BORDER}`,overflow:"hidden",cursor:"pointer"}}
+                  onClick={()=>{setPartIdx(pi);setView("ejecutivo");}}>
+                  <div style={{background:TEAL,padding:"10px 16px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div><div style={{fontSize:9,color:"#ffffff88",letterSpacing:1}}>{p.pn}</div><div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{p.name}</div></div>
+                    <div style={{fontSize:10,color:"#ffffff88"}}>{p.cotas} cotas · {p.molds} moldes</div>
+                  </div>
+                  <div style={{padding:"12px 16px"}}>
+                    <div style={{display:"flex",gap:8,marginBottom:10}}>
+                      <div style={{flex:1,background:`${GREEN}10`,borderRadius:6,padding:"8px 10px",textAlign:"center",border:`1.5px solid ${GREEN}30`}}>
+                        <div style={{fontSize:8,color:GREEN,fontWeight:700,letterSpacing:1}}>MEJOR MOLDE</div>
+                        <div style={{fontSize:18,fontWeight:800,color:GREEN}}>{p.best.m}</div>
+                        <div style={{fontSize:9,color:MUTED}}>{p.best.p}% pasa</div>
+                      </div>
+                      <div style={{flex:1,background:`${RED}10`,borderRadius:6,padding:"8px 10px",textAlign:"center",border:`1.5px solid ${RED}30`}}>
+                        <div style={{fontSize:8,color:RED,fontWeight:700,letterSpacing:1}}>PEOR MOLDE</div>
+                        <div style={{fontSize:18,fontWeight:800,color:RED}}>{p.worst.m}</div>
+                        <div style={{fontSize:9,color:MUTED}}>{p.worst.p}% pasa</div>
+                      </div>
+                      <div style={{flex:1,background:`${RED}08`,borderRadius:6,padding:"8px 10px",textAlign:"center"}}>
+                        <div style={{fontSize:8,color:RED,fontWeight:700,letterSpacing:1}}>FALLAS UNIVERSALES</div>
+                        <div style={{fontSize:18,fontWeight:800,color:RED}}>{p.univ}</div>
+                        <div style={{fontSize:9,color:MUTED}}>de {p.cotas}</div>
+                      </div>
+                    </div>
+                    <table style={{width:"100%",borderCollapse:"collapse",marginBottom:10}}>
+                      <thead><tr style={{borderBottom:`2px solid ${BORDER}`}}>
+                        {["Tipo","n","% Pasa tolerancia","% Capaz (Ppk>=1.33)","Problema"].map(h=>
+                          <th key={h} style={{padding:"4px",textAlign:"center",color:MUTED,fontSize:8,fontWeight:600}}>{h}</th>)}
+                      </tr></thead>
+                      <tbody>
+                        <TR tipo="DVA" d={p.dva} color={TEAL}/>
+                        <TR tipo="Control Proc." d={p.cp} color={AMBER}/>
+                        <TR tipo="CTQ" d={p.ctq} color={RED}/>
+                      </tbody>
+                    </table>
+                    <div style={{background:LIGHT,borderRadius:6,padding:"8px 10px",borderLeft:`3px solid ${TEAL}`}}>
+                      <div style={{fontSize:9,fontWeight:700,color:TEAL,marginBottom:2}}>DIAGNOSTICO</div>
+                      <div style={{fontSize:9,lineHeight:1.5}}>{p.dx}</div>
+                    </div>
+                    <div style={{marginTop:8,textAlign:"center",fontSize:9,color:TEAL,fontWeight:600}}>Clic para ver detalle por molde →</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{marginTop:18,display:"flex",justifyContent:"space-between",borderTop:`1px solid ${BORDER}`,paddingTop:10}}>
+              <div style={{fontSize:9,color:MUTED}}>Nota: Tamanos de muestra n=2-8. Indices Ppk son indicativos. Se recomienda n>=25 para conclusiones robustas.</div>
+              <div style={{fontSize:9,color:MUTED}}>Calidad Corporativa · Metrologia 3D</div>
+            </div>
+          </React.Fragment>);
+        })()}
+
+        {/* ═══ PART-SPECIFIC VIEWS ═══ */}
+        {view!=="scorecard"&&<React.Fragment>
         {/* Part selector */}
         <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+          <button onClick={()=>setView("scorecard")} style={{
+            padding:"10px 16px",borderRadius:10,border:`1.5px solid ${BORDER}`,cursor:"pointer",
+            background:CARD,color:MUTED,fontSize:11,fontWeight:700,fontFamily:"inherit"
+          }}>← Score Card</button>
           {PART_KEYS.map((pk,i)=>(
             <button key={pk} onClick={()=>{setPartIdx(i);setSelectedDim(0);setView("ejecutivo");setFTol("all");setFTipo("all");setSearch("");}} style={{
               padding:"10px 16px",borderRadius:10,border:`1.5px solid ${partIdx===i?TEAL:BORDER}`,cursor:"pointer",
@@ -553,13 +652,13 @@ function Dashboard(){
             })}
           </div>
         </React.Fragment>}
+
+        </React.Fragment>}
       </div>
     </div>
   );
 }
 
-
 createRoot(document.getElementById('root')).render(<Dashboard />);
 </script>
-</body>
-</html>
+</body></html>
